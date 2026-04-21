@@ -1573,7 +1573,7 @@ input, textarea, select {
 .reel-icon-btn svg { width: 16px; height: 16px; stroke: #fff; }
 .reel-icon-btn:active { background: rgba(255,255,255,0.25); }
 
-/* Feed — full-bleed, each card fills the viewport slot */
+/* Feed — Instagram-style smooth scroll with optimized performance */
 .reel-feed {
   position: absolute;
   top: 0; left: 0; right: 0;
@@ -1587,7 +1587,15 @@ input, textarea, select {
   will-change: scroll-position;
   touch-action: pan-y;
   background: #050507;
+  /* Performance optimizations */
+  contain: layout style paint;
+  content-visibility: auto;
+  /* Smooth scroll behavior for programmatic scrolling */
+  scroll-behavior: smooth;
 }
+.reel-feed::-webkit-scrollbar { display: none; }
+/* Hide scrollbar but keep functionality */
+.reel-feed { -ms-overflow-style: none; }
 .reel-feed::-webkit-scrollbar { display: none; }
 
 /* Empty state */
@@ -1637,7 +1645,7 @@ input, textarea, select {
 .scroll-arrow-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.92); }
 .scroll-arrow-btn svg { width: 16px; height: 16px; stroke: #fff; }
 
-/* Individual reel card — fills feed slot with side margins for border display */
+/* Individual reel card — Instagram-style with optimized rendering */
 .reel-card {
   position: relative;
   width: calc(100% - 16px);
@@ -1650,29 +1658,59 @@ input, textarea, select {
   flex-shrink: 0;
   border-radius: 20px;
   border: 1.5px solid rgba(255,255,255,0.12);
-  /* No box-shadow — forces full card texture re-upload every scroll frame */
-  /* Isolate each card — prevents sibling cards from triggering
-     reflow/repaint during video playback */
+  /* Instagram-style smooth transitions */
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+  /* Isolate each card — prevents sibling cards from triggering reflow/repaint */
   contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
   /* Isolate compositing from siblings completely */
   isolation: isolate;
   /* Own compositor layer — GPU-accelerated scroll & render */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   will-change: transform;
+  /* Optimize for touch */
+  touch-action: pan-y;
 }
+/* Active reel card - slight scale for focus */
+.reel-card.active {
+  transform: translateZ(0) scale(1);
+  opacity: 1;
+}
+/* Adjacent cards - slight fade for depth */
+.reel-card.adjacent {
+  opacity: 0.95;
+}
+/* Optimized video for Instagram-like performance */
 .reel-video {
   width: 100%; height: 100%;
   object-fit: cover;
   display: block;
-  /* Force GPU layer — critical for high frame rate playback */
+  /* Force GPU layer — critical for 60fps+ playback */
   will-change: transform;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  transform: translateZ(0) scale(1.001);
+  -webkit-transform: translateZ(0) scale(1.001);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   /* Prevent browser from applying quality reduction */
   image-rendering: auto;
+  /* Optimize video decoding */
+  decode: async;
+  /* Smooth video transitions */
+  transition: opacity 0.2s ease;
+}
+/* Video loading state */
+.reel-video[data-loading="true"] {
+  opacity: 0;
+}
+.reel-video[data-loaded="true"] {
+  opacity: 1;
+}
+/* Poster image optimization */
+.reel-video[poster] {
+  background-size: cover;
+  background-position: center;
 }
 /* ── Reel bottom bar height token (matches .reel-bottombar) ── */
 :root {
@@ -7644,7 +7682,7 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
         canvas.width = w;
         canvas.height = h;
 
-        const stream = canvas.captureStream(30); // 30fps
+        const stream = canvas.captureStream(60); // 60fps for smoother quality
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: 'video/webm;codecs=vp9,opus',
           videoBitsPerSecond: targetSize < 10 * 1024 * 1024 ? 2_000_000 : 1_500_000
@@ -8015,44 +8053,92 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
     }, 100);
   }
 
-  // ── Intersection Observer for lazy video autoplay ────────
+  // ── Instagram-style Intersection Observer with prefetching ────────
   let _reelObserver = null;
+  let _prefetchTimeout = null;
   function setupReelObserver() {
     if (_reelObserver) _reelObserver.disconnect();
     _reelObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        const video = entry.target.querySelector('.reel-video');
+        const card = entry.target;
+        const video = card.querySelector('.reel-video');
         if (!video) return;
-        if (entry.isIntersecting) {
-          // Lazy-load: only set src when card is visible
+
+        // Update active/adjacent classes for visual feedback
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+          card.classList.add('active');
+          card.classList.remove('adjacent');
+        } else if (entry.isIntersecting) {
+          card.classList.add('adjacent');
+          card.classList.remove('active');
+        } else {
+          card.classList.remove('active', 'adjacent');
+        }
+
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+          // Current reel - load and play
           if (!video.src || video.src === window.location.href) {
-            var lazySrc = video.dataset.src;
+            const lazySrc = video.dataset.src;
             if (lazySrc) {
+              video.setAttribute('data-loading', 'true');
               video.src = lazySrc;
               video.load();
+              video.onloadeddata = () => {
+                video.setAttribute('data-loaded', 'true');
+                video.removeAttribute('data-loading');
+              };
             }
           }
+          // Reset to start when coming into view
+          video.currentTime = 0;
           video.muted = false;
           video.play().catch(() => {
             video.muted = true;
             video.play().catch(() => {});
           });
-          var playIcon = entry.target.querySelector('.reel-play-icon');
+          const playIcon = card.querySelector('.reel-play-icon');
           if (playIcon) playIcon.classList.add('hidden');
+
+          // Instagram-style: prefetch next reel
+          clearTimeout(_prefetchTimeout);
+          _prefetchTimeout = setTimeout(() => prefetchNextReel(card), 500);
         } else {
+          // Not visible - pause
           video.pause();
-          // Unload video completely if more than 2 screens away — frees memory + stops network
-          if (Math.abs(entry.boundingClientRect.top) > window.innerHeight * 2) {
-            video.src = '';
-            video.load();
+          // Unload if far away (more than 3 screens) - memory optimization
+          const distance = Math.abs(entry.boundingClientRect.top);
+          if (distance > window.innerHeight * 3) {
+            video.removeAttribute('data-loaded');
+            if (video.src && video.src !== window.location.href) {
+              video.src = '';
+              video.load();
+            }
           }
         }
       });
-    }, { threshold: 0.6 });
+    }, { threshold: [0, 0.5, 0.6, 0.9] });
 
     document.querySelectorAll('.reel-card').forEach(card => {
       _reelObserver.observe(card);
     });
+  }
+
+  // ── Instagram-style prefetch next reel ────────────────────
+  function prefetchNextReel(currentCard) {
+    const nextCard = currentCard.nextElementSibling;
+    if (!nextCard || !nextCard.classList.contains('reel-card')) return;
+
+    const nextVideo = nextCard.querySelector('.reel-video');
+    if (!nextVideo || nextVideo.src) return;
+
+    const lazySrc = nextVideo.dataset.src;
+    if (lazySrc) {
+      // Prefetch without playing
+      nextVideo.setAttribute('preload', 'metadata');
+      nextVideo.src = lazySrc;
+      nextVideo.load();
+      console.log('[Reel] Prefetched next video');
+    }
   }
 
   // ════════════════════════════════════════════════════════
@@ -8851,12 +8937,12 @@ window.addEventListener('beforeinstallprompt', (e) => {
 // ── Reel Navigation: Touch, Mouse Wheel & Arrow Keys ─────────
 (function() {
 
-  const SNAP_DURATION = 350; // ms for programmatic scroll
+  const SNAP_DURATION = 280; // ms - faster for Instagram-like snappy feel
   let _isSnapping    = false;
   let _touchStartY   = 0;
   let _touchStartX   = 0;
   let _lastWheelTime = 0;
-  const WHEEL_COOLDOWN = 600; // ms between wheel snaps
+  const WHEEL_COOLDOWN = 450; // ms - faster cooldown for quick scrolling
 
   function getFeed() { return document.getElementById('reel-feed'); }
 
@@ -8884,9 +8970,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
     cards[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // Show brief nav indicator
-    showNavHint(index, cards.length);
-
     setTimeout(() => { _isSnapping = false; }, SNAP_DURATION + 100);
   }
 
@@ -8898,36 +8981,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
   function goPrev(feed) {
     const i = getCurrentIndex(feed);
     snapTo(feed, i - 1);
-  }
-
-  // ── Nav hint (small pill showing reel N / total) ──────────
-  let _hintEl   = null;
-  let _hintTimer = null;
-  function showNavHint(index, total) {
-    if (!_hintEl) {
-      _hintEl = document.createElement('div');
-      _hintEl.style.cssText = `
-        position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.8);
-        background:rgba(0,0,0,0.65); color:#fff;
-        padding:8px 18px; border-radius:20px;
-        font-family:'DM Sans',system-ui,sans-serif; font-size:0.8rem; font-weight:600;
-        letter-spacing:0.06em; pointer-events:none; z-index:88888;
-        opacity:0; transition:opacity 0.2s, transform 0.2s;
-        backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.12);
-      `;
-      const frame = document.getElementById('app-frame') || document.body;
-      frame.appendChild(_hintEl);
-    }
-    _hintEl.textContent = `${index + 1} / ${total}`;
-    _hintEl.style.opacity = '1';
-    _hintEl.style.transform = 'translate(-50%,-50%) scale(1)';
-    clearTimeout(_hintTimer);
-    _hintTimer = setTimeout(() => {
-      if (_hintEl) {
-        _hintEl.style.opacity = '0';
-        _hintEl.style.transform = 'translate(-50%,-50%) scale(0.85)';
-      }
-    }, 900);
   }
 
   // ── Arrow key navigation ───────────────────────────────────
