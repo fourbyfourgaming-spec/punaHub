@@ -1682,23 +1682,30 @@ input, textarea, select {
 .reel-card.adjacent {
   opacity: 0.95;
 }
-/* Optimized video for Instagram-like performance */
+/* Optimized video for all device types */
 .reel-video {
   width: 100%; height: 100%;
   object-fit: cover;
   display: block;
-  /* Force GPU layer — critical for 60fps+ playback */
-  will-change: transform;
-  transform: translateZ(0) scale(1.001);
-  -webkit-transform: translateZ(0) scale(1.001);
+  /* Conditional GPU layer based on device capability */
+  will-change: auto;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  /* Prevent browser from applying quality reduction */
-  image-rendering: auto;
-  /* Optimize video decoding */
-  decode: async;
-  /* Smooth video transitions */
-  transition: opacity 0.2s ease;
+  /* Optimize video decoding - auto for compatibility */
+  decoding: auto;
+  /* Simple fade transition */
+  transition: opacity 0.15s ease;
+}
+
+/* High-end devices get full optimizations */
+@media (min-width: 768px) and (min-resolution: 2dppx) {
+  .reel-video {
+    will-change: transform;
+    transform: translateZ(0) scale(1.001);
+    -webkit-transform: translateZ(0) scale(1.001);
+  }
 }
 /* Video loading state */
 .reel-video[data-loading="true"] {
@@ -7682,7 +7689,8 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
         canvas.width = w;
         canvas.height = h;
 
-        const stream = canvas.captureStream(60); // 60fps for smoother quality
+        const targetFPS = window.LOW_END_FPS || 60;
+        const stream = canvas.captureStream(targetFPS); // 60fps high-end, 30fps low-end
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: 'video/webm;codecs=vp9,opus',
           videoBitsPerSecond: targetSize < 10 * 1024 * 1024 ? 2_000_000 : 1_500_000
@@ -8125,6 +8133,12 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
 
   // ── Instagram-style prefetch next reel ────────────────────
   function prefetchNextReel(currentCard) {
+    // Skip prefetch on low-end devices
+    if (window.DISABLE_PREFETCH) {
+      console.log('[Reel] Prefetch disabled on low-end device');
+      return;
+    }
+
     const nextCard = currentCard.nextElementSibling;
     if (!nextCard || !nextCard.classList.contains('reel-card')) return;
 
@@ -10249,6 +10263,29 @@ window.__sbData    = { users:{}, reels:[], follows:{}, settings:{} };
   const { createClient } = supabase;
   const sb = createClient(SB_URL, SB_ANON);
   window.sb = sb;
+
+  // ── Low-End Device Detection & Optimizations ────────────
+  const isLowEndDevice = (function() {
+    // Check for low memory (under 4GB)
+    const lowMemory = navigator.deviceMemory && navigator.deviceMemory < 4;
+    // Check for low core count
+    const lowCores = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
+    // Check connection speed
+    const slowConnection = navigator.connection && (navigator.connection.effectiveType === '2g' || navigator.connection.effectiveType === 'slow-2g');
+    // Check for reduced motion preference
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return lowMemory || lowCores || slowConnection || reducedMotion;
+  })();
+
+  // Apply low-end optimizations
+  if (isLowEndDevice) {
+    document.documentElement.classList.add('low-end');
+    console.log('[Performance] Low-end mode activated');
+    // Reduce video compression FPS on low-end
+    window.LOW_END_FPS = 30;
+    // Disable prefetching to save memory
+    window.DISABLE_PREFETCH = true;
+  }
 
   // ── Upload file to Supabase Storage ────────────────────
   async function uploadToStorage(path, dataURL, mimeType) {
