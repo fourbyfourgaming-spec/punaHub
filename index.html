@@ -4036,6 +4036,236 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
 .crop-canvas-wrap {
   box-shadow: 0 0 0 3px var(--accent), 0 0 0 6px rgba(201,245,66,0.15), 0 12px 48px rgba(0,0,0,0.6);
 }
+
+/* ══════════════════════════════════════════════════════════
+   TERMS & CONDITIONS - Checkbox and Modal
+══════════════════════════════════════════════════════════ */
+
+/* Checkbox wrapper */
+.terms-checkbox-wrap {
+  margin: 14px 0 8px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(201,245,66,0.15);
+  border-radius: 14px;
+}
+
+.terms-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  position: relative;
+}
+
+.terms-checkbox-label input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Custom checkbox */
+.terms-checkmark {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-top: 1px;
+}
+
+.terms-checkbox-label input:checked ~ .terms-checkmark {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.terms-checkbox-label input:checked ~ .terms-checkmark::after {
+  content: '✓';
+  color: #0d0f14;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.terms-text {
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.terms-link {
+  color: var(--accent);
+  text-decoration: underline;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.terms-link:hover {
+  opacity: 0.8;
+}
+
+.terms-hint {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin: 6px 0 0 30px;
+  font-style: italic;
+}
+
+/* Terms Modal */
+.terms-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.terms-modal.hidden {
+  display: none !important;
+}
+
+.terms-modal-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.terms-sheet {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(to bottom, rgba(20,23,32,0.99) 0%, rgba(13,15,20,1) 100%);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  animation: sheetUp 0.32s cubic-bezier(0.16,1,0.3,1) both;
+  border-top: 1px solid rgba(201,245,66,0.15);
+  box-shadow: 0 -16px 64px rgba(0,0,0,0.8);
+}
+
+.terms-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: sticky;
+  top: 0;
+  background: inherit;
+  z-index: 2;
+}
+
+.terms-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.4rem;
+  color: var(--accent);
+  margin: 0;
+}
+
+.terms-close-btn {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: var(--muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.terms-close-btn:active {
+  background: rgba(255,255,255,0.15);
+  color: var(--text);
+  transform: scale(0.95);
+}
+
+.terms-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+  scrollbar-width: none;
+}
+
+.terms-content::-webkit-scrollbar {
+  display: none;
+}
+
+.terms-section {
+  margin-bottom: 20px;
+}
+
+.terms-section h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(201,245,66,0.2);
+}
+
+.terms-section p {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+  margin: 0 0 10px 0;
+}
+
+.terms-section ul {
+  margin: 8px 0;
+  padding-left: 18px;
+}
+
+.terms-section li {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.terms-section strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.terms-footer {
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(13,15,20,0.8);
+  display: flex;
+  justify-content: center;
+}
+
+.terms-footer .btn-primary {
+  max-width: 200px;
+  width: 100%;
+}
+
+/* Shake animation for validation */
+@keyframes termsShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.terms-checkbox-wrap.error {
+  animation: termsShake 0.4s ease;
+  border-color: var(--error);
+  background: rgba(255,107,107,0.08);
+}
 </style>
 <body>
 
@@ -4141,6 +4371,19 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
         <label for="signup-password">Password</label>
         <input type="password" id="signup-password" autocomplete="new-password" placeholder="Min. 6 characters" minlength="6" required />
       </div>
+
+      <!-- Terms and Conditions Checkbox -->
+      <div class="terms-checkbox-wrap">
+        <label class="terms-checkbox-label">
+          <input type="checkbox" id="terms-checkbox" required />
+          <span class="terms-checkmark"></span>
+          <span class="terms-text">
+            I agree to the <a href="#" onclick="openTermsModal(); return false;" class="terms-link">Terms & Conditions</a>
+          </span>
+        </label>
+        <p class="terms-hint">Required: You must be 18+ to access adult content</p>
+      </div>
+
       <button type="submit" class="btn-primary">Create Account</button>
       <p id="signup-msg" class="message"></p>
     </form>
@@ -4265,6 +4508,89 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
       </p>
       <p id="new-password-msg" class="message"></p>
     </form>
+  </div>
+
+  <!-- ══════════════════════════════════════ TERMS & CONDITIONS MODAL -->
+  <div class="terms-modal hidden" id="terms-modal">
+    <div class="terms-modal-bg" onclick="closeTermsModal()"></div>
+    <div class="terms-sheet">
+      <div class="terms-header">
+        <h2 class="terms-title">Terms & Conditions</h2>
+        <button class="terms-close-btn" onclick="closeTermsModal()">✕</button>
+      </div>
+      <div class="terms-content">
+        <div class="terms-section">
+          <h3>1. Age Verification & Adult Content</h3>
+          <p>By accessing this platform, you confirm that you are <strong>at least 18 years of age</strong> (or the legal age of majority in your jurisdiction). This platform contains sexually explicit content that is intended for adults only.</p>
+          <p>You agree that:</p>
+          <ul>
+            <li>You are legally permitted to view adult content in your location</li>
+            <li>You will not allow minors to access content through your account</li>
+            <li>You understand the nature of the content hosted on this platform</li>
+          </ul>
+        </div>
+
+        <div class="terms-section">
+          <h3>2. Content Policies - Sexual Content</h3>
+          <p>Users may upload and view sexual content subject to the following conditions:</p>
+          <ul>
+            <li>All participants in uploaded content must be consenting adults (18+)</li>
+            <li>Non-consensual content, revenge porn, or content depicting sexual assault is strictly prohibited</li>
+            <li>Content involving minors in any sexual context is illegal and will be reported to authorities</li>
+            <li>Bestiality and extreme sexual violence are prohibited</li>
+          </ul>
+        </div>
+
+        <div class="terms-section">
+          <h3>3. Violence & Graphic Content</h3>
+          <p>The following violent content policies apply:</p>
+          <ul>
+            <li>Content depicting real violence, gore, or graphic injury is prohibited</li>
+            <li>Simulated violence in fictional or consensual contexts may be permitted with appropriate warnings</li>
+            <li>Content promoting or glorifying violence against individuals or groups is prohibited</li>
+            <li>Terrorist content or extremist propaganda is strictly forbidden</li>
+          </ul>
+        </div>
+
+        <div class="terms-section">
+          <h3>4. Profile Photos & User Content</h3>
+          <p>All profile photos and user-generated content must comply with:</p>
+          <ul>
+            <li>Profile photos must not contain nudity or sexually explicit imagery</li>
+            <li>Photos must not depict violence, weapons, or threatening imagery</li>
+            <li>You must have rights to upload any content you share</li>
+            <li>Do not upload content depicting other people without their consent</li>
+            <li>AI-generated or deepfake content must be clearly labeled</li>
+          </ul>
+        </div>
+
+        <div class="terms-section">
+          <h3>5. Account Responsibilities</h3>
+          <p>You are responsible for:</p>
+          <ul>
+            <li>Maintaining the confidentiality of your account credentials</li>
+            <li>All activity conducted through your account</li>
+            <li>Immediately reporting unauthorized access</li>
+            <li>Providing accurate information during registration</li>
+          </ul>
+        </div>
+
+        <div class="terms-section">
+          <h3>6. Enforcement & Termination</h3>
+          <p>We reserve the right to:</p>
+          <ul>
+            <li>Remove any content that violates these terms without notice</li>
+            <li>Suspend or terminate accounts for policy violations</li>
+            <li>Report illegal content to appropriate authorities</li>
+            <li>Cooperate with law enforcement investigations</li>
+          </ul>
+        </div>
+
+        <div class="terms-footer">
+          <button class="btn-primary" onclick="acceptTermsAndClose()">I Understand & Agree</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ══════════════════════════════════════ REELS SCREEN -->
@@ -5059,6 +5385,9 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
     const year     = document.getElementById('signup-year').value;
     const email    = document.getElementById('signup-email').value.trim().toLowerCase();
     const password = document.getElementById('signup-password').value;
+    const termsCheckbox = document.getElementById('terms-checkbox');
+    const termsWrap = document.querySelector('.terms-checkbox-wrap');
+
     if (!day || !month || !year) { showMsg('signup-msg','Please select your full date of birth.','error'); return; }
 
     // ── 18+ age check ──────────────────────────────────────
@@ -5069,6 +5398,15 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) age--;
     if (age < 18) {
       showMsg('signup-msg', '🔞 You must be 18 or older to sign up.', 'error');
+      return;
+    }
+
+    // ── Terms & Conditions check ───────────────────────────
+    if (!termsCheckbox.checked) {
+      showMsg('signup-msg', '⚠️ You must agree to the Terms & Conditions to continue.', 'error');
+      termsWrap.classList.add('error');
+      setTimeout(() => termsWrap.classList.remove('error'), 500);
+      termsCheckbox.focus();
       return;
     }
 
@@ -5106,6 +5444,39 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
     switchTab('signin');
     showCard('auth-card');
   }
+
+  // ════════════════════════════════════════════════════════
+  //  TERMS & CONDITIONS MODAL
+  // ════════════════════════════════════════════════════════
+  function openTermsModal() {
+    document.getElementById('terms-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeTermsModal() {
+    document.getElementById('terms-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  function acceptTermsAndClose() {
+    document.getElementById('terms-checkbox').checked = true;
+    closeTermsModal();
+    // Remove any error state from the checkbox wrapper
+    const termsWrap = document.querySelector('.terms-checkbox-wrap');
+    if (termsWrap) {
+      termsWrap.classList.remove('error');
+    }
+  }
+
+  // Close terms modal on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const termsModal = document.getElementById('terms-modal');
+      if (termsModal && !termsModal.classList.contains('hidden')) {
+        closeTermsModal();
+      }
+    }
+  });
 
   // ════════════════════════════════════════════════════════
   //  FORGOT PASSWORD / OTP SYSTEM
