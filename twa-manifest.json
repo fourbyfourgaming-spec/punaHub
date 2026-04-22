@@ -1,0 +1,56 @@
+{
+  "packageId": "com.punahub.app",
+  "host": "punahub.com",
+  "name": "punaHub",
+  "launcherName": "punaHub",
+  "display": "standalone",
+  "themeColor": "#0d0f14",
+  "themeColorDark": "#0d0f14",
+  "navigationColor": "#0d0f14",
+  "navigationColorDark": "#0d0f14",
+  "navigationDividerColor": "#0d0f14",
+  "navigationDividerColorDark": "#0d0f14",
+  "backgroundColor": "#0d0f14",
+  "enableNotifications": true,
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "fallbackType": "customtabs",
+  "features": {
+    "playBilling": {
+      "enabled": false
+    },
+    "locationDelegation": {
+      "enabled": true
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "serviceWorker": {
+    "src": "service-worker.js",
+    "scope": "/",
+    "useLiquidCore": false
+  },
+  "webManifestUrl": "https://punahub.com/manifest.json",
+  "manifestUrl": "https://punahub.com/manifest.json",
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Upload Reel",
+      "shortName": "Upload",
+      "url": "https://punahub.com/?action=upload",
+      "icons": [{ "src": "icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Profile",
+      "shortName": "Profile", 
+      "url": "https://punahub.com/?action=profile",
+      "icons": [{ "src": "icon-192x192.png", "sizes": "192x192" }]
+    }
+  ],
+  "signing": {
+    "path": "android.keystore",
+    "alias": "punahub"
+  }
+}

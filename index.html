@@ -12,6 +12,13 @@
   <meta name="description" content="punaHub — share your moments">
   <meta name="apple-mobile-web-app-title" content="punaHub">
   <meta name="mobile-web-app-capable" content="yes">
+  <!-- Android/TWA Support -->
+  <meta name="application-name" content="punaHub">
+  <meta name="msapplication-TileColor" content="#0d0f14">
+  <meta name="msapplication-tap-highlight" content="no">
+  <!-- Trusted Web Activity support -->
+  <meta name="theme-color" content="#0d0f14" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#0d0f14" media="(prefers-color-scheme: light)">
   <!-- Hint to Chrome on Android to request high refresh rate for this page -->
   <meta name="screen-orientation" content="any">
   <style>
@@ -270,133 +277,9 @@
   })();
 
   // ══════════════════════════════════════════════════════════
-  //  WEB PUSH ENGINE — subscribe device, relay to Supabase Edge Fn
-  //  ✅ Works on Android Chrome, Windows Chrome/Edge/Firefox
-  //  ✅ Background push even when app is closed
+  //  WEB PUSH ENGINE — consolidated single implementation
+  //  See full implementation at end of file (Push Notification System)
   // ══════════════════════════════════════════════════════════
-  (function() {
-
-    // ── VAPID public key (generated — matches Edge Function) ──
-    var VAPID_PUBLIC_KEY = 'BIOIeHOJdthC2DTUTn3NrY751kCRVmtiifNwl2OgLzuA6UogmKVi13I_7FI90netvv-Ct5tY1y7RW_dprCSfMGc';
-
-    // Convert VAPID key from base64url to Uint8Array
-    function urlB64ToUint8Array(b64) {
-      var padding = '='.repeat((4 - b64.length % 4) % 4);
-      var base64  = (b64 + padding).replace(/-/g, '+').replace(/_/g, '/');
-      var raw     = atob(base64);
-      var arr     = new Uint8Array(raw.length);
-      for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-      return arr;
-    }
-
-    // ── Subscribe this device to Web Push ────────────────────
-    async function subscribePush(userEmail) {
-      if (!userEmail) return null;
-      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        console.log('[punaHub Push] PushManager not supported on this device');
-        return null;
-      }
-      if (Notification.permission !== 'granted') return null;
-
-      try {
-        // Wait for SW to be ready
-        var reg = await navigator.serviceWorker.ready;
-
-        // Check for existing subscription — reuse if valid
-        var existing = await reg.pushManager.getSubscription();
-        if (existing) {
-          await _savePushSub(userEmail, existing);
-          console.log('[punaHub Push] ✅ Reused existing push subscription');
-          return existing;
-        }
-
-        // Subscribe to push
-        var sub = await reg.pushManager.subscribe({
-          userVisibleOnly:    true,
-          applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY)
-        });
-
-        await _savePushSub(userEmail, sub);
-        console.log('[punaHub Push] ✅ New push subscription saved for', userEmail);
-        return sub;
-
-      } catch(e) {
-        console.warn('[punaHub Push] Subscribe failed:', e.message);
-        return null;
-      }
-    }
-
-    // ── Save subscription to Supabase ─────────────────────────
-    async function _savePushSub(userEmail, sub) {
-      if (!window.sb || !sub) return;
-      try {
-        var subJson = sub.toJSON();
-        await window.sb.from('punahub_push_subs').upsert({
-          user_email: userEmail,
-          endpoint:   sub.endpoint,
-          p256dh:     subJson.keys && subJson.keys.p256dh,
-          auth:       subJson.keys && subJson.keys.auth,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_email,endpoint' });
-      } catch(e) {
-        console.warn('[punaHub Push] Save sub failed:', e.message);
-      }
-    }
-
-    // ── Send push via Supabase Edge Function ─────────────────
-    // Called server-side equivalent: we call the Edge Fn with the target email
-    // The Edge Fn looks up their subscriptions and sends Web Push
-    async function sendPushNotif(toEmail, title, body, tag, icon) {
-      if (!toEmail) return;
-      var SB_URL  = (typeof window.SB_URL  !== 'undefined' ? window.SB_URL  : '') || 'https://hafjrxixytudodnuptky.supabase.co';
-      var SB_ANON = (typeof window.SB_ANON !== 'undefined' ? window.SB_ANON : '') || '';
-      var endpoint = SB_URL + '/functions/v1/push-notify';
-
-      var payload = JSON.stringify({
-        to_email: toEmail,
-        title:    title || 'punaHub',
-        body:     body  || 'New activity',
-        tag:      tag   || 'punahub',
-        icon:     icon  || ''
-      });
-
-      console.log('[punaHub Push] Sending to', toEmail, '→', endpoint);
-
-      // Retry up to 3 times with 1s delay
-      for (var attempt = 1; attempt <= 3; attempt++) {
-        try {
-          var res = await fetch(endpoint, {
-            method:  'POST',
-            headers: {
-              'Content-Type':  'application/json',
-              'Authorization': 'Bearer ' + SB_ANON
-            },
-            body: payload
-          });
-          if (res.ok) {
-            var data = await res.json().catch(function(){ return {}; });
-            console.log('[punaHub Push] ✅ Sent! subs hit:', data.sent, '| attempt:', attempt);
-            return;
-          } else {
-            var errText = await res.text().catch(function(){ return res.status; });
-            console.warn('[punaHub Push] ❌ Edge Fn returned', res.status, ':', errText);
-            if (res.status === 401 || res.status === 403) return; // auth error — no point retrying
-          }
-        } catch(e) {
-          console.warn('[punaHub Push] attempt', attempt, 'failed:', e.message);
-        }
-        if (attempt < 3) await new Promise(function(r){ setTimeout(r, 1000 * attempt); });
-      }
-    }
-
-    // ── Expose globally ────────────────────────────────────────
-    window.__punaPush = {
-      subscribe:   subscribePush,
-      send:        sendPushNotif,
-      vapidKey:    VAPID_PUBLIC_KEY
-    };
-
-  })();
 
   // ══════════════════════════════════════════════════════════
   //  NOTIFICATION PERMISSION SYSTEM — works in ALL browsers
@@ -12183,7 +12066,8 @@ insert into storage.buckets (id,name,public) values ('punahub','punahub',true) o
     getPermission: getNotificationPermission,
     showLocal: showLocalNotification,
     createToggle: createPushToggle,
-    getSubscription: () => pushSubscription
+    getSubscription: () => pushSubscription,
+    vapidKey: VAPID_PUBLIC_KEY
   };
 
 })();

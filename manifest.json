@@ -22,5 +22,34 @@
       "purpose": "any maskable"
     }
   ],
-  "gcm_sender_id": "103953800507"
+  "gcm_sender_id": "103953800507",
+  "shortcuts": [
+    {
+      "name": "Upload Reel",
+      "short_name": "Upload",
+      "description": "Upload a new reel",
+      "url": "/?action=upload",
+      "icons": [{ "src": "icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Profile",
+      "short_name": "Profile",
+      "description": "View your profile",
+      "url": "/?action=profile",
+      "icons": [{ "src": "icon-192x192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["social", "entertainment"],
+  "screenshots": [
+    {
+      "src": "screenshot-1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "edge_side_panel": {}
 }
