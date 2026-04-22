@@ -4266,6 +4266,171 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
   border-color: var(--error);
   background: rgba(255,107,107,0.08);
 }
+
+/* ══════════════════════════════════════════════════════════
+   UNDERAGE BAN MODAL
+══════════════════════════════════════════════════════════ */
+.underage-ban-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.underage-ban-modal.hidden {
+  display: none !important;
+}
+
+.underage-ban-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.underage-ban-sheet {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(20,23,32,0.98) 0%, rgba(13,15,20,0.99) 100%);
+  border-radius: 28px;
+  width: 100%;
+  max-width: 380px;
+  padding: 32px 24px 28px;
+  text-align: center;
+  border: 1px solid rgba(255,107,107,0.3);
+  box-shadow:
+    0 0 0 1px rgba(255,107,107,0.1),
+    0 24px 64px rgba(0,0,0,0.8),
+    0 0 40px rgba(255,107,107,0.15);
+  animation: banModalIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes banModalIn {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.underage-ban-icon {
+  font-size: 4rem;
+  margin-bottom: 12px;
+  animation: banIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes banIconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.underage-ban-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.6rem;
+  color: var(--error);
+  margin: 0 0 8px 0;
+}
+
+.underage-ban-subtitle {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0 0 24px 0;
+}
+
+.underage-ban-countdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 16px;
+  background: rgba(255,107,107,0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(255,107,107,0.15);
+}
+
+.countdown-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.countdown-number {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--error);
+  line-height: 1;
+}
+
+.countdown-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.countdown-divider {
+  font-size: 1.5rem;
+  color: var(--error);
+  font-weight: 700;
+  opacity: 0.5;
+  margin-top: -10px;
+}
+
+.underage-ban-msg {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+  margin: 0 0 20px 0;
+  font-style: italic;
+}
+
+.underage-ban-details {
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.ban-detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  padding: 6px 0;
+}
+
+.ban-detail-row:not(:last-child) {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.ban-detail-label {
+  color: var(--muted);
+}
+
+.ban-detail-value {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.underage-ban-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.underage-ban-footer .btn-primary {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+  box-shadow: 0 4px 16px rgba(255,107,107,0.3);
+}
+
+.underage-ban-footer .btn-link {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
 </style>
 <body>
 
@@ -4589,6 +4754,51 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
         <div class="terms-footer">
           <button class="btn-primary" onclick="acceptTermsAndClose()">I Understand & Agree</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ UNDERAGE BAN MODAL -->
+  <div class="underage-ban-modal hidden" id="underage-ban-modal">
+    <div class="underage-ban-bg" onclick="closeUnderageBanModal()"></div>
+    <div class="underage-ban-sheet">
+      <div class="underage-ban-icon">🔞</div>
+      <h2 class="underage-ban-title">Access Denied</h2>
+      <p class="underage-ban-subtitle">You must be 18 or older to use punaHub</p>
+
+      <div class="underage-ban-countdown">
+        <div class="countdown-section">
+          <span class="countdown-number" id="ban-years">0</span>
+          <span class="countdown-label">Years</span>
+        </div>
+        <div class="countdown-divider">:</div>
+        <div class="countdown-section">
+          <span class="countdown-number" id="ban-months">0</span>
+          <span class="countdown-label">Months</span>
+        </div>
+        <div class="countdown-divider">:</div>
+        <div class="countdown-section">
+          <span class="countdown-number" id="ban-days">0</span>
+          <span class="countdown-label">Days</span>
+        </div>
+      </div>
+
+      <p class="underage-ban-msg">Until you can create an account</p>
+
+      <div class="underage-ban-details">
+        <div class="ban-detail-row">
+          <span class="ban-detail-label">Your Date of Birth:</span>
+          <span class="ban-detail-value" id="ban-dob-display">--/--/----</span>
+        </div>
+        <div class="ban-detail-row">
+          <span class="ban-detail-label">Eligible to join:</span>
+          <span class="ban-detail-value" id="ban-eligible-date">--/--/----</span>
+        </div>
+      </div>
+
+      <div class="underage-ban-footer">
+        <button class="btn-primary" onclick="closeUnderageBanModal()">I Understand</button>
+        <button class="btn-link" onclick="closeUnderageBanModal(); switchTab('signin');">Back to Sign In</button>
       </div>
     </div>
   </div>
@@ -5390,15 +5600,52 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
 
     if (!day || !month || !year) { showMsg('signup-msg','Please select your full date of birth.','error'); return; }
 
-    // ── 18+ age check ──────────────────────────────────────
+    // ── 18+ age check with temporary ban ───────────────────
     const today   = new Date();
     const birthDate = new Date(`${year}-${month}-${day}`);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) age--;
+
     if (age < 18) {
-      showMsg('signup-msg', '🔞 You must be 18 or older to sign up.', 'error');
+      // Calculate exact years and months remaining
+      const yearsLeft = 17 - age;
+      const monthsLeft = monthDiff < 0 ? 12 + monthDiff : 11 - monthDiff;
+      const daysLeft = today.getDate() < birthDate.getDate() ? birthDate.getDate() - today.getDate() : 0;
+
+      // Store ban in localStorage with email to prevent retry
+      const banKey = 'punahub_underage_ban_' + email;
+      const banInfo = {
+        dob: `${day}/${month}/${year}`,
+        bannedAt: new Date().toISOString(),
+        yearsLeft: yearsLeft,
+        monthsLeft: monthsLeft,
+        eligibleDate: `${day}/${month}/${today.getFullYear() + yearsLeft}`
+      };
+      localStorage.setItem(banKey, JSON.stringify(banInfo));
+
+      // Show ban modal with countdown
+      showUnderageBanModal(yearsLeft, monthsLeft, daysLeft, banInfo.eligibleDate);
       return;
+    }
+
+    // Check if this email was previously banned for underage
+    const banCheck = localStorage.getItem('punahub_underage_ban_' + email);
+    if (banCheck) {
+      const banData = JSON.parse(banCheck);
+      const today = new Date();
+      const eligibleDate = new Date(`${year}-${month}-${day}`);
+      eligibleDate.setFullYear(eligibleDate.getFullYear() + 18);
+
+      if (today < eligibleDate) {
+        const diffTime = eligibleDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const yearsLeft = Math.floor(diffDays / 365);
+        const monthsLeft = Math.floor((diffDays % 365) / 30);
+
+        showUnderageBanModal(yearsLeft, monthsLeft, diffDays % 30, banData.eligibleDate);
+        return;
+      }
     }
 
     // ── Terms & Conditions check ───────────────────────────
@@ -5475,8 +5722,52 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
       if (termsModal && !termsModal.classList.contains('hidden')) {
         closeTermsModal();
       }
+      const underageModal = document.getElementById('underage-ban-modal');
+      if (underageModal && !underageModal.classList.contains('hidden')) {
+        closeUnderageBanModal();
+      }
     }
   });
+
+  // ════════════════════════════════════════════════════════
+  //  UNDERAGE BAN MODAL FUNCTIONS
+  // ════════════════════════════════════════════════════════
+  function showUnderageBanModal(years, months, days, eligibleDate) {
+    // Update countdown numbers
+    document.getElementById('ban-years').textContent = years;
+    document.getElementById('ban-months').textContent = months;
+    document.getElementById('ban-days').textContent = days;
+
+    // Update date info
+    const dobDisplay = document.getElementById('ban-dob-display');
+    const eligibleDisplay = document.getElementById('ban-eligible-date');
+
+    // Get the stored ban info to show actual DOB
+    const email = document.getElementById('signup-email').value.trim().toLowerCase();
+    const banKey = 'punahub_underage_ban_' + email;
+    const banInfo = localStorage.getItem(banKey);
+
+    if (banInfo) {
+      const banData = JSON.parse(banInfo);
+      dobDisplay.textContent = banData.dob || '--/--/----';
+    } else {
+      dobDisplay.textContent = '--/--/----';
+    }
+
+    eligibleDisplay.textContent = eligibleDate || '--/--/----';
+
+    // Show modal
+    document.getElementById('underage-ban-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Clear form to prevent retry
+    document.getElementById('form-signup').reset();
+  }
+
+  function closeUnderageBanModal() {
+    document.getElementById('underage-ban-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
 
   // ════════════════════════════════════════════════════════
   //  FORGOT PASSWORD / OTP SYSTEM
