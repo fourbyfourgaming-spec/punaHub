@@ -562,6 +562,12 @@
       var bInfo   = getBrowserName(info);
       var featColor = { follow:'rgba(201,245,66,0.12)', like:'rgba(255,82,82,0.12)', comment:'rgba(66,245,213,0.12)' };
 
+      // Get current user's nickname or use a sample username for preview
+      var sampleNames = ['alex_reels', 'sarah_vibes', 'mike_420', 'luna_spark', 'neon_rider'];
+      var randomName  = sampleNames[Math.floor(Math.random() * sampleNames.length)];
+      var currentUser = (typeof getCU === 'function' && getCU()) || {};
+      var previewName = (currentUser.nickname) || randomName;
+
       overlay.innerHTML =
         '<div id="pnp-card">' +
           '<div id="pnp-header">' +
@@ -575,9 +581,9 @@
             '</div>' +
           '</div>' +
           '<div id="pnp-features">' +
-            '<div class="pnp-feat"><div class="pnp-feat-icon" style="background:' + featColor.follow + '">👤</div><span>Someone <strong style="color:#c9f542">followed</strong> you</span></div>' +
-            '<div class="pnp-feat"><div class="pnp-feat-icon" style="background:' + featColor.like + '">❤️</div><span>Someone <strong style="color:#ff6b6b">liked</strong> your reel</span></div>' +
-            '<div class="pnp-feat"><div class="pnp-feat-icon" style="background:' + featColor.comment + '">💬</div><span>Someone <strong style="color:#42f5d5">commented</strong> on your reel</span></div>' +
+            '<div class="pnp-feat"><div class="pnp-feat-icon" style="background:' + featColor.follow + '">👤</div><span><strong style="color:#c9f542">' + previewName + '</strong> followed you</span></div>' +
+            '<div class="pnp-feat"><div class="pnp-feat-icon" style="background:' + featColor.like + '">❤️</div><span><strong style="color:#ff6b6b">' + previewName + '</strong> liked your reel</span></div>' +
+            '<div class="pnp-feat"><div class="pnp-feat-icon" style="background:' + featColor.comment + '">💬</div><span><strong style="color:#42f5d5">' + previewName + '</strong> commented on your reel</span></div>' +
           '</div>' +
           '<div id="pnp-btns">' +
             '<button id="pnp-allow">🔔&nbsp; Allow Notifications</button>' +
@@ -7739,7 +7745,7 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
           fromEmail:    currentUser.email,
           fromNickname: currentUser.nickname || currentUser.email.split('@')[0],
           fromAvatar:   _likeAvatar,
-          message:      (currentUser.nickname || 'Someone') + ' liked your reel',
+          message:      (currentUser.nickname || currentUser.email.split('@')[0]) + ' liked your reel',
           timestamp:    Date.now(),
           read:         false
         });
