@@ -4908,7 +4908,10 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
       <input type="file" id="reel-file" accept="video/*" class="hidden" onchange="onVideoSelect(event)"/>
 
       <div class="field" style="margin-top:14px">
-        <label for="reel-title">Title</label>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+          <label for="reel-title" style="margin-bottom:0;">Title</label>
+          <button type="button" onclick="applyReelTemplate()" style="background:rgba(201,245,66,0.1); border:1px solid rgba(201,245,66,0.2); color:var(--accent); font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:12px; cursor:pointer; font-family:'DM Sans',sans-serif;">📝 Template</button>
+        </div>
         <input type="text" id="reel-title" placeholder="Give your reel a title…" maxlength="60"/>
       </div>
       <div class="field" style="margin-top:10px">
@@ -8113,6 +8116,12 @@ html.landscape.mobile .reel-nav-btn    { font-size: 0.65rem; }
     document.getElementById('upload-seek-wrap').classList.add('hidden');
     videoFile = null;
   }
+
+  function applyReelTemplate() {
+    document.getElementById('reel-title').value = '✨ My Awesome Reel ✨';
+    document.getElementById('reel-desc').value = 'Check out this amazing moment! Don\'t forget to like and follow 💖 #trending #viral';
+  }
+
   // ── Upload video seek slider state ─────────────────────
   let _uploadSeeking = false;
 
